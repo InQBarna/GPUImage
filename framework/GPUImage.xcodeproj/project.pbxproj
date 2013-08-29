@@ -23,6 +23,12 @@
 /* Begin PBXBuildFile section */
 		0DF3FA2B14FA00C9006AF7D9 /* GPUImageVignetteFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 0DF3FA2914FA00C9006AF7D9 /* GPUImageVignetteFilter.h */; settings = {ATTRIBUTES = (); }; };
 		0DF3FA2C14FA00C9006AF7D9 /* GPUImageVignetteFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 0DF3FA2A14FA00C9006AF7D9 /* GPUImageVignetteFilter.m */; };
+		2D35231F17CDED180084CA5F /* GPUImageMovieWithAudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 2D35231D17CDED180084CA5F /* GPUImageMovieWithAudio.h */; };
+		2D35232017CDED180084CA5F /* GPUImageMovieWithAudio.m in Sources */ = {isa = PBXBuildFile; fileRef = 2D35231E17CDED180084CA5F /* GPUImageMovieWithAudio.m */; };
+		2DB91D1217CF863B00686004 /* TPCircularBuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 2DB91D0E17CF863B00686004 /* TPCircularBuffer.c */; };
+		2DB91D1317CF863B00686004 /* TPCircularBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DB91D0F17CF863B00686004 /* TPCircularBuffer.h */; };
+		2DB91D1417CF863B00686004 /* TPCircularBuffer+AudioBufferList.c in Sources */ = {isa = PBXBuildFile; fileRef = 2DB91D1017CF863B00686004 /* TPCircularBuffer+AudioBufferList.c */; };
+		2DB91D1517CF863B00686004 /* TPCircularBuffer+AudioBufferList.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DB91D1117CF863B00686004 /* TPCircularBuffer+AudioBufferList.h */; };
 		4308B1D715F7EED30014437A /* GPUImageNormalBlendFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4308B1D515F7EED10014437A /* GPUImageNormalBlendFilter.h */; settings = {ATTRIBUTES = (); }; };
 		4308B1D815F7EED30014437A /* GPUImageNormalBlendFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4308B1D615F7EED20014437A /* GPUImageNormalBlendFilter.m */; };
 		4686952F155AACAC0060BA43 /* GPUImageSourceOverBlendFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4686952D155AACAC0060BA43 /* GPUImageSourceOverBlendFilter.h */; settings = {ATTRIBUTES = (); }; };
@@ -371,6 +377,12 @@
 		0D9D91AE15011CA200A5BC83 /* GPUImageGaussianSelectiveBlurFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPUImageGaussianSelectiveBlurFilter.m; path = Source/GPUImageGaussianSelectiveBlurFilter.m; sourceTree = SOURCE_ROOT; };
 		0DF3FA2914FA00C9006AF7D9 /* GPUImageVignetteFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPUImageVignetteFilter.h; path = Source/GPUImageVignetteFilter.h; sourceTree = SOURCE_ROOT; };
 		0DF3FA2A14FA00C9006AF7D9 /* GPUImageVignetteFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPUImageVignetteFilter.m; path = Source/GPUImageVignetteFilter.m; sourceTree = SOURCE_ROOT; };
+		2D35231D17CDED180084CA5F /* GPUImageMovieWithAudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPUImageMovieWithAudio.h; path = Source/GPUImageMovieWithAudio.h; sourceTree = SOURCE_ROOT; };
+		2D35231E17CDED180084CA5F /* GPUImageMovieWithAudio.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPUImageMovieWithAudio.m; path = Source/GPUImageMovieWithAudio.m; sourceTree = SOURCE_ROOT; };
+		2DB91D0E17CF863B00686004 /* TPCircularBuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = TPCircularBuffer.c; path = Source/TPCircularBuffer.c; sourceTree = SOURCE_ROOT; };
+		2DB91D0F17CF863B00686004 /* TPCircularBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TPCircularBuffer.h; path = Source/TPCircularBuffer.h; sourceTree = SOURCE_ROOT; };
+		2DB91D1017CF863B00686004 /* TPCircularBuffer+AudioBufferList.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "TPCircularBuffer+AudioBufferList.c"; path = "Source/TPCircularBuffer+AudioBufferList.c"; sourceTree = SOURCE_ROOT; };
+		2DB91D1117CF863B00686004 /* TPCircularBuffer+AudioBufferList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "TPCircularBuffer+AudioBufferList.h"; path = "Source/TPCircularBuffer+AudioBufferList.h"; sourceTree = SOURCE_ROOT; };
 		4308B1D515F7EED10014437A /* GPUImageNormalBlendFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPUImageNormalBlendFilter.h; path = Source/GPUImageNormalBlendFilter.h; sourceTree = SOURCE_ROOT; };
 		4308B1D615F7EED20014437A /* GPUImageNormalBlendFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPUImageNormalBlendFilter.m; path = Source/GPUImageNormalBlendFilter.m; sourceTree = SOURCE_ROOT; };
 		4686952D155AACAC0060BA43 /* GPUImageSourceOverBlendFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPUImageSourceOverBlendFilter.h; path = Source/GPUImageSourceOverBlendFilter.h; sourceTree = SOURCE_ROOT; };
@@ -957,6 +969,10 @@
 		BCB5E78114E232BC00701302 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				2DB91D0E17CF863B00686004 /* TPCircularBuffer.c */,
+				2DB91D0F17CF863B00686004 /* TPCircularBuffer.h */,
+				2DB91D1017CF863B00686004 /* TPCircularBuffer+AudioBufferList.c */,
+				2DB91D1117CF863B00686004 /* TPCircularBuffer+AudioBufferList.h */,
 				BCB5E77D14E22E4200701302 /* GPUImageOutput.h */,
 				BCB5E77E14E22E4200701302 /* GPUImageOutput.m */,
 				BCB5E76314E208D600701302 /* GPUImageVideoCamera.h */,
@@ -967,6 +983,8 @@
 				BCB5E7D914E6003400701302 /* GPUImagePicture.m */,
 				BC982C6A14F33C290001FF6F /* GPUImageMovie.h */,
 				BC982C6B14F33C2A0001FF6F /* GPUImageMovie.m */,
+				2D35231D17CDED180084CA5F /* GPUImageMovieWithAudio.h */,
+				2D35231E17CDED180084CA5F /* GPUImageMovieWithAudio.m */,
 				BCF3D689153CC124009A1FE5 /* GPUImageTextureInput.h */,
 				BCF3D68A153CC124009A1FE5 /* GPUImageTextureInput.m */,
 				BCF1E640156AB332006B155F /* GPUImageRawDataInput.h */,
@@ -1341,6 +1359,9 @@
 				BCBC605716C8527C00B11741 /* GPUImageZoomBlurFilter.h in Headers */,
 				BC6C55401730679D00EB222D /* GPUImageLaplacianFilter.h in Headers */,
 				BCB030BE173400BC001A1A20 /* GPUImageThreeInputFilter.h in Headers */,
+				2D35231F17CDED180084CA5F /* GPUImageMovieWithAudio.h in Headers */,
+				2DB91D1317CF863B00686004 /* TPCircularBuffer.h in Headers */,
+				2DB91D1517CF863B00686004 /* TPCircularBuffer+AudioBufferList.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1614,6 +1635,9 @@
 				BCBF617B16E4F44700E2784A /* GPUImageKuwaharaRadius3Filter.m in Sources */,
 				BC6C55411730679D00EB222D /* GPUImageLaplacianFilter.m in Sources */,
 				BCB030BF173400BC001A1A20 /* GPUImageThreeInputFilter.m in Sources */,
+				2D35232017CDED180084CA5F /* GPUImageMovieWithAudio.m in Sources */,
+				2DB91D1217CF863B00686004 /* TPCircularBuffer.c in Sources */,
+				2DB91D1417CF863B00686004 /* TPCircularBuffer+AudioBufferList.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
