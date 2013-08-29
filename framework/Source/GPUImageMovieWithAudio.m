@@ -51,6 +51,12 @@ static OSStatus playbackCallback(void *inRefCon,
                                                 ioData,
                                                 &outTimestamp,
                                                 &audioFormat);
+    } else {
+            if ( ioData ) {
+                for ( int i=0; i<ioData->mNumberBuffers; i++ ) {
+                    memset((char*)ioData->mBuffers[i].mData,0, ioData->mBuffers[i].mDataByteSize);
+                }
+            }
     }
     
     return noErr;
@@ -69,6 +75,7 @@ static OSStatus playbackCallback(void *inRefCon,
     AudioComponentInstance audioUnit;
     BOOL audioSetup;
     BOOL audioOpen;
+    BOOL audioExtractionIsFinished;
     
     TPCircularBuffer tpCircularBuffer;
 }
@@ -222,6 +229,7 @@ static OSStatus playbackCallback(void *inRefCon,
     BOOL shouldRecordAudioTrack = (([audioTracks count] > 0) && (weakSelf.audioEncodingTarget != nil) );
     BOOL shouldPlayAudioTrack = ([audioTracks count] > 0);
     AVAssetReaderTrackOutput *readerAudioTrackOutput = nil;
+    audioExtractionIsFinished = YES;
 
     // this piece was only executed if shoudlRecordAudioTracks
     if ( shouldPlayAudioTrack )
@@ -240,8 +248,12 @@ static OSStatus playbackCallback(void *inRefCon,
         AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
         readerAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:audioOutputSettings];
         [reader addOutput:readerAudioTrackOutput];
+        
+        audioExtractionIsFinished = NO;
+        TPCircularBufferClear(&tpCircularBuffer1);
     }
 
+    audioEncodingIsFinished = YES;
     if ( shouldRecordAudioTrack ) {
         [self.audioEncodingTarget setShouldInvalidateAudioSampleWhenDone:YES];
         audioEncodingIsFinished = NO;
@@ -272,11 +284,13 @@ static OSStatus playbackCallback(void *inRefCon,
         
         while (reader.status == AVAssetReaderStatusReading && (!_shouldRepeat || keepLooping))
         {
-            [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
+            @synchronized(reader) {
+                [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
 
-            if ( shouldPlayAudioTrack && !audioEncodingIsFinished )
-            {
-                [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                if ( shouldPlayAudioTrack && !audioExtractionIsFinished )
+                {
+                    [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                }
             }
 
         }
@@ -363,7 +377,7 @@ static OSStatus playbackCallback(void *inRefCon,
         __unsafe_unretained GPUImageMovieWithAudio *weakSelf = self;
         runSynchronouslyOnVideoProcessingQueue(^{
             
-            if (!audioEncodingIsFinished) {
+            if ( !audioEncodingIsFinished ) {
                 [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
             }
             
@@ -376,6 +390,7 @@ static OSStatus playbackCallback(void *inRefCon,
     else
     {
         audioEncodingIsFinished = YES;
+        audioExtractionIsFinished = YES;
       
     }
 }
@@ -507,8 +522,10 @@ static OSStatus playbackCallback(void *inRefCon,
 
 - (void)cancelProcessing
  {
-    if (reader) {
-        [reader cancelReading];
+    @synchronized(reader) {
+        if (reader) {
+            [reader cancelReading];
+        }
     }
     [self endProcessing];
 }
