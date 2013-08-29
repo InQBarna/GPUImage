@@ -521,12 +521,13 @@ static OSStatus playbackCallback(void *inRefCon,
 }
 
 - (void)cancelProcessing
- {
+{
     @synchronized(reader) {
         if (reader) {
             [reader cancelReading];
         }
     }
+    [self endAudio];
     [self endProcessing];
 }
 
@@ -643,6 +644,14 @@ static OSStatus playbackCallback(void *inRefCon,
     checkStatus(status);
     
     audioSetup = YES;
+}
+
+
+- (void) endAudio {
+    
+    AudioUnitUninitialize(audioUnit);
+    audioUnit = nil;
+    audioSetup = NO;
 }
 
 - (void) startAudioPlay {
