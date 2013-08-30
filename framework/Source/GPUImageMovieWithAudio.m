@@ -4,7 +4,6 @@
 
 #define kOutputBus 0
 
-TPCircularBuffer tpCircularBuffer1;
 
 void checkStatus(int status);
 static OSStatus playbackCallback(void *inRefCon, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *ioData);
@@ -28,6 +27,8 @@ static OSStatus playbackCallback(void *inRefCon,
                                  UInt32 inNumberFrames,
                                  AudioBufferList *ioData) {
     
+    //GPUImageMovieWithAudio *gpiwa = (GPUImageMovieWithAudio*)inRefCon;
+    TPCircularBuffer *tpCircularBuffer = inRefCon;
     UInt32 ioLengthInFrames = inNumberFrames;
     
     AudioStreamBasicDescription audioFormat;
@@ -43,10 +44,10 @@ static OSStatus playbackCallback(void *inRefCon,
     AudioTimeStamp outTimestamp;
     
     
-    UInt32 retVal = TPCircularBufferPeek(&tpCircularBuffer1, &outTimestamp, &audioFormat);
+    UInt32 retVal = TPCircularBufferPeek(tpCircularBuffer, &outTimestamp, &audioFormat);
     
     if (retVal > 0) {
-        TPCircularBufferDequeueBufferListFrames(&tpCircularBuffer1,
+        TPCircularBufferDequeueBufferListFrames(tpCircularBuffer,
                                                 &ioLengthInFrames,
                                                 ioData,
                                                 &outTimestamp,
@@ -77,7 +78,6 @@ static OSStatus playbackCallback(void *inRefCon,
     BOOL audioOpen;
     BOOL audioExtractionIsFinished;
     
-    TPCircularBuffer tpCircularBuffer;
 }
 
 - (void)processAsset;
@@ -93,7 +93,7 @@ static OSStatus playbackCallback(void *inRefCon,
 @synthesize delegate = _delegate;
 @synthesize shouldRepeat = _shouldRepeat;
 @synthesize completionBlock;
-@synthesize tpCircularBuffer;
+@synthesize tpCircularBuffer = _tpCircularBuffer;
 
 #pragma mark -
 #pragma mark Initialization and teardown
@@ -110,7 +110,7 @@ static OSStatus playbackCallback(void *inRefCon,
     self.url = url;
     self.asset = nil;
     
-    TPCircularBufferInit(&tpCircularBuffer1, 4096*500);
+    TPCircularBufferInit(&_tpCircularBuffer, 4096*500);
 
     return self;
 }
@@ -127,7 +127,7 @@ static OSStatus playbackCallback(void *inRefCon,
     self.url = nil;
     self.asset = asset;
     
-    TPCircularBufferInit(&tpCircularBuffer1, 4096*500);
+    TPCircularBufferInit(&_tpCircularBuffer, 4096*500);
 
     return self;
 }
@@ -161,7 +161,7 @@ static OSStatus playbackCallback(void *inRefCon,
         CFRelease(coreVideoTextureCache);
     }
     
-    TPCircularBufferCleanup(&tpCircularBuffer1);
+    TPCircularBufferCleanup(&_tpCircularBuffer);
 }
 #pragma mark -
 #pragma mark Movie processing
@@ -213,8 +213,6 @@ static OSStatus playbackCallback(void *inRefCon,
 {
     __unsafe_unretained GPUImageMovieWithAudio *weakSelf = self;
     NSError *error = nil;
-    reader = [AVAssetReader assetReaderWithAsset:self.asset error:&error];
-
     NSMutableDictionary *outputSettings = [NSMutableDictionary dictionary];
     [outputSettings setObject: [NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
                        forKey: (NSString*)kCVPixelBufferPixelFormatTypeKey];
@@ -223,48 +221,54 @@ static OSStatus playbackCallback(void *inRefCon,
         [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:[[self.asset tracksWithMediaType:AVMediaTypeVideo]
                                                                    objectAtIndex:0]
                                                    outputSettings:outputSettings];
-    [reader addOutput:readerVideoTrackOutput];
-
+    AVAssetReaderTrackOutput *readerAudioTrackOutput = nil;
+    
     NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
     BOOL shouldRecordAudioTrack = (([audioTracks count] > 0) && (weakSelf.audioEncodingTarget != nil) );
     BOOL shouldPlayAudioTrack = ([audioTracks count] > 0);
-    AVAssetReaderTrackOutput *readerAudioTrackOutput = nil;
     audioExtractionIsFinished = YES;
-
-    // this piece was only executed if shoudlRecordAudioTracks
-    if ( shouldPlayAudioTrack )
-    {
-        // open a trackoutput for audio
-        NSMutableDictionary *audioOutputSettings = [NSMutableDictionary dictionary];
-        [audioOutputSettings setObject:[NSNumber numberWithInt:kAudioFormatLinearPCM] forKey:AVFormatIDKey];
-        [audioOutputSettings setObject:[NSNumber numberWithInt:44100] forKey:AVSampleRateKey];
-        [audioOutputSettings setObject:[NSNumber numberWithInt:2] forKey:AVNumberOfChannelsKey];
-        [audioOutputSettings setObject:[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
-        [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
-        [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
-        [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsNonInterleaved];
-
-        // This might need to be extended to handle movies with more than one audio track
-        AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
-        readerAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:audioOutputSettings];
-        [reader addOutput:readerAudioTrackOutput];
-        
-        audioExtractionIsFinished = NO;
-        TPCircularBufferClear(&tpCircularBuffer1);
-    }
-
     audioEncodingIsFinished = YES;
-    if ( shouldRecordAudioTrack ) {
-        [self.audioEncodingTarget setShouldInvalidateAudioSampleWhenDone:YES];
-        audioEncodingIsFinished = NO;
-    }
+    
+    // open a trackoutput for audio
+    NSMutableDictionary *audioOutputSettings = [NSMutableDictionary dictionary];
+    [audioOutputSettings setObject:[NSNumber numberWithInt:kAudioFormatLinearPCM] forKey:AVFormatIDKey];
+    [audioOutputSettings setObject:[NSNumber numberWithInt:44100] forKey:AVSampleRateKey];
+    [audioOutputSettings setObject:[NSNumber numberWithInt:2] forKey:AVNumberOfChannelsKey];
+    [audioOutputSettings setObject:[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
+    [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
+    [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
+    [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsNonInterleaved];
 
-    if ([reader startReading] == NO) 
-    {
-        NSLog(@"Error reading from file at URL: %@", weakSelf.url);
-        return;
+    // This might need to be extended to handle movies with more than one audio track
+    AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
+    readerAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:audioOutputSettings];
+    
+    @synchronized(reader) {
+        reader = [AVAssetReader assetReaderWithAsset:self.asset error:&error];
+
+        [reader addOutput:readerVideoTrackOutput];
+
+        // this piece was only executed if shoudlRecordAudioTracks
+        if ( shouldPlayAudioTrack )
+        {
+            [reader addOutput:readerAudioTrackOutput];
+            
+            audioExtractionIsFinished = NO;
+            TPCircularBufferClear(&_tpCircularBuffer);
+        }
+
+        if ( shouldRecordAudioTrack ) {
+            [self.audioEncodingTarget setShouldInvalidateAudioSampleWhenDone:YES];
+            audioEncodingIsFinished = NO;
+        }
+
+        if ([reader startReading] == NO) 
+        {
+            NSLog(@"Error reading from file at URL: %@", weakSelf.url);
+            return;
+        }
     }
-        
+    
     if (synchronizedMovieWriter != nil)
     {
         [synchronizedMovieWriter setVideoInputReadyCallback:^{
@@ -282,17 +286,21 @@ static OSStatus playbackCallback(void *inRefCon,
 
         [self startAudioPlay];
         
-        while (reader.status == AVAssetReaderStatusReading && (!_shouldRepeat || keepLooping))
+        while (true)
         {
             @synchronized(reader) {
-                [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
-
-                if ( shouldPlayAudioTrack && !audioExtractionIsFinished )
+                if (reader.status == AVAssetReaderStatusReading && (!_shouldRepeat || keepLooping))
                 {
-                    [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                    [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
+
+                    if ( shouldPlayAudioTrack && !audioExtractionIsFinished )
+                    {
+                        [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                    }
+                } else {
+                    break;
                 }
             }
-
         }
         
         [self stopAudioPlay];
@@ -529,6 +537,7 @@ static OSStatus playbackCallback(void *inRefCon,
     }
     [self endAudio];
     [self endProcessing];
+    
 }
 
 - (void)processAudioFrame:(CMSampleBufferRef)movieSampleBuffer;
@@ -550,7 +559,7 @@ static OSStatus playbackCallback(void *inRefCon,
                                                             kCMSampleBufferFlag_AudioBufferList_Assure16ByteAlignment,
                                                             &blockBuffer);
     
-    copied = TPCircularBufferCopyAudioBufferList(&tpCircularBuffer1,
+    copied = TPCircularBufferCopyAudioBufferList(&_tpCircularBuffer,
                                                  &audioBufferList,
                                                  NULL,
                                                  kTPCircularBufferCopyAll,
@@ -624,7 +633,7 @@ static OSStatus playbackCallback(void *inRefCon,
     // Set output callback
     AURenderCallbackStruct callbackStruct;
     callbackStruct.inputProc = playbackCallback;
-    callbackStruct.inputProcRefCon = (__bridge void *)(self);
+    callbackStruct.inputProcRefCon = (void *)(&_tpCircularBuffer);
     status = AudioUnitSetProperty(audioUnit,
                                   kAudioUnitProperty_SetRenderCallback,
                                   kAudioUnitScope_Global,
