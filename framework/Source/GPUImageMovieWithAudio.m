@@ -243,15 +243,16 @@ static OSStatus playbackCallback(void *inRefCon,
     AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
     readerAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:audioOutputSettings];
     
+    AVAssetReader *r = nil;
     @synchronized(reader) {
-        reader = [AVAssetReader assetReaderWithAsset:self.asset error:&error];
+        r = [AVAssetReader assetReaderWithAsset:self.asset error:&error];
 
-        [reader addOutput:readerVideoTrackOutput];
+        [r addOutput:readerVideoTrackOutput];
 
         // this piece was only executed if shoudlRecordAudioTracks
         if ( shouldPlayAudioTrack )
         {
-            [reader addOutput:readerAudioTrackOutput];
+            [r addOutput:readerAudioTrackOutput];
             
             audioExtractionIsFinished = NO;
             TPCircularBufferClear(&_tpCircularBuffer);
@@ -262,11 +263,13 @@ static OSStatus playbackCallback(void *inRefCon,
             audioEncodingIsFinished = NO;
         }
 
-        if ([reader startReading] == NO) 
+        if ([r startReading] == NO)
         {
             NSLog(@"Error reading from file at URL: %@", weakSelf.url);
             return;
         }
+        reader = r;
+        
     }
     
     if (synchronizedMovieWriter != nil)
