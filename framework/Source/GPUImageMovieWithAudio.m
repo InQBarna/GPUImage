@@ -233,7 +233,9 @@ static OSStatus playbackCallback(void *inRefCon,
     NSMutableDictionary *audioOutputSettings = [NSMutableDictionary dictionary];
     [audioOutputSettings setObject:[NSNumber numberWithInt:kAudioFormatLinearPCM] forKey:AVFormatIDKey];
     [audioOutputSettings setObject:[NSNumber numberWithInt:44100] forKey:AVSampleRateKey];
-    [audioOutputSettings setObject:[NSNumber numberWithInt:2] forKey:AVNumberOfChannelsKey];
+    if ( [[UIDevice currentDevice].systemVersion floatValue] >= 6.0 ) {
+        [audioOutputSettings setObject:[NSNumber numberWithInt:2] forKey:AVNumberOfChannelsKey];
+    }
     [audioOutputSettings setObject:[NSNumber numberWithInt:16] forKey:AVLinearPCMBitDepthKey];
     [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsBigEndianKey];
     [audioOutputSettings setObject:[NSNumber numberWithBool:NO] forKey:AVLinearPCMIsFloatKey];
