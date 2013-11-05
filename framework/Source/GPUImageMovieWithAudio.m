@@ -110,7 +110,7 @@ static OSStatus playbackCallback(void *inRefCon,
     self.url = url;
     self.asset = nil;
     
-    TPCircularBufferInit(&_tpCircularBuffer, 4096*500);
+    TPCircularBufferInit(&_tpCircularBuffer, 4096*1000);
 
     return self;
 }
@@ -127,7 +127,7 @@ static OSStatus playbackCallback(void *inRefCon,
     self.url = nil;
     self.asset = asset;
     
-    TPCircularBufferInit(&_tpCircularBuffer, 4096*500);
+    TPCircularBufferInit(&_tpCircularBuffer, 4096*1000);
 
     return self;
 }
